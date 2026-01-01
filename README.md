@@ -134,6 +134,17 @@ The report is divided into 5 strategic views:
 
 ---
 
+### Operational Reporting (Power BI Paginated Report)
+* **Tool:** Power BI Report Builder.
+* **Objective:** Enable warehouse managers to print "pixel-perfect" stock manifests for physical inventory checks.
+* **Key Features:**
+    * **Parameters:** Dynamic "Low Stock Threshold" allowing users to filter urgency (e.g., items < 50 units).
+    * **Grouping:** Hierarchical layout (Store > Category > Product) for logical warehouse navigation.
+    * **Logic:** Uses SQL aggregation `SUM(quantity_change)` to calculate real-time stock levels from transactional tables.
+* **Output Preview:**
+<img width="598" height="772" alt="paginated report" src="https://github.com/user-attachments/assets/72ee4023-4dd3-4390-8922-1f0d3dd2299e" />
+
+
 ## ✅ Skills Demonstrated
 
 - [x] **Advanced Data Modeling:** Medallion Architecture, Galaxy Schema design with multiple Fact tables.
