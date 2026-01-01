@@ -4,6 +4,8 @@
 ![SQL Server](https://img.shields.io/badge/Microsoft%20SQL%20Server-Data_Warehouse_and_Analysis-CC2927?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)
 ![Power BI](https://img.shields.io/badge/Power_BI-DAX_and_Visualization-F2C811?style=for-the-badge&logo=powerbi&logoColor=black)
 ![Architecture](https://img.shields.io/badge/Architecture-Galaxy_Schema-blue?style=for-the-badge)
+![Power BI Report Builder](https://img.shields.io/badge/Power_BI_Report_Builder-Paginated_Reports-F2C811?style=for-the-badge&logo=powerbi&logoColor=black)
+
 
 ## 📊 Overview
 
