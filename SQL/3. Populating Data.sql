@@ -1,10 +1,4 @@
 
-
-/* ================================================================================
-   SEED DATA SCRIPT: STATIC FOUNDATION
-   Populates Stores, Suppliers, Categories, Products, and Customers.
-   ================================================================================
-*/
 SET NOCOUNT ON;
 
 -- 1. STORES (Real locations + Online)
@@ -24,11 +18,11 @@ INSERT INTO Supplier (SupplierName, ContactPerson, Email, PhoneNumber) VALUES
 ('Logitech Distribution', 'Amy Wong', 'au-sales@logitech.com', '02-4444-5555');
 
 -- 3. CATEGORIES (Hierarchical Data)
--- Level 1: Roots
+
 INSERT INTO ProductCategory (CategoryName, ParentCategoryID) VALUES ('Electronics', NULL); -- ID 1
 INSERT INTO ProductCategory (CategoryName, ParentCategoryID) VALUES ('Accessories', NULL); -- ID 2
 
--- Level 2: Children
+
 INSERT INTO ProductCategory (CategoryName, ParentCategoryID) VALUES ('Laptops', 1);       -- ID 3
 INSERT INTO ProductCategory (CategoryName, ParentCategoryID) VALUES ('Smartphones', 1);   -- ID 4
 INSERT INTO ProductCategory (CategoryName, ParentCategoryID) VALUES ('Audio', 1);         -- ID 5
@@ -63,7 +57,7 @@ INSERT INTO Product (SKU, ProductName, CategoryID, Brand, UnitPrice, StandardCos
 ('ACC-WBR-005', 'Fast Charger 65W', 7, 'Anker', 69.00, 25.00);
 
 -- 5. CUSTOMERS (A seed list of 100 people)
--- We use a loop here to generate enough volume for analysis
+
 DECLARE @i INT = 1;
 WHILE @i <= 100
 BEGIN
@@ -78,8 +72,6 @@ BEGIN
     );
     SET @i = @i + 1;
 END
-
-PRINT 'Static Foundation Loaded Successfully.';
 
 
 ----------------------------------------------------------------------------------------
@@ -100,21 +92,16 @@ ORDER BY Margin_Pct DESC;
 
 ---------------------------------------------------------------------------------------------
 
-/* ================================================================================
-   THE TIME MACHINE: DATA SIMULATION (2023 - PRESENT)
-   Generates Purchase Orders, Shipments, Sales, Payments, and Returns.
-   ================================================================================
-*/
 SET NOCOUNT ON;
 DECLARE @StartDate DATE = '2023-01-01';
 DECLARE @EndDate DATE = GETDATE();
 DECLARE @CurrentDate DATE = @StartDate;
 
-PRINT 'Starting Simulation from 2023-01-01...';
+
 
 -- 1. THE BIG BANG: INITIAL STOCKING (Jan 2023)
 -- We need to buy stock BEFORE we can sell it, or the trigger will block us.
-PRINT 'Initializing Warehouse Stock...';
+;
 
 DECLARE @StoreID INT = 1;
 WHILE @StoreID <= 5 -- Loop through all 5 stores
@@ -130,11 +117,11 @@ BEGIN
     );
     DECLARE @OpeningPO INT = SCOPE_IDENTITY();
 
-    -- Stock EVERY product (50 of each)
+    
     INSERT INTO PurchaseOrderLine (PurchaseOrderID, ProductID, QuantityOrdered, UnitCost)
     SELECT @OpeningPO, ProductID, 50, StandardCost FROM Product;
 
-    -- Ship it (Receive it)
+  
     INSERT INTO InboundShipment (ActualArrivalDate, CarrierName) VALUES ('2022-12-30', 'DHL');
     DECLARE @OpeningShip INT = SCOPE_IDENTITY();
 
@@ -146,19 +133,19 @@ BEGIN
     SET @StoreID = @StoreID + 1;
 END
 
--- 2. THE DAILY GRIND (Simulation Loop)
+
 WHILE @CurrentDate <= @EndDate
 BEGIN
     
     -- A. SEASONALITY FACTOR
-    -- Sales are 2x higher in Nov/Dec, 0.8x in Jan/Feb
+    
     DECLARE @Seasonality FLOAT = CASE 
         WHEN MONTH(@CurrentDate) IN (11, 12) THEN 2.0 
         WHEN MONTH(@CurrentDate) IN (1, 2) THEN 0.8
         ELSE 1.0 
     END;
 
-    -- B. GENERATE SALES (Random number of orders per day per store)
+    -- B. GENERATE SALES
     SET @StoreID = 1;
     WHILE @StoreID <= 5
     BEGIN
@@ -177,8 +164,7 @@ BEGIN
             DECLARE @NewSOID INT = SCOPE_IDENTITY();
 
             -- Create Lines (1-3 items per order)
-            -- CRITICAL: We only sell what we have in stock.
-            -- We pick a random product, check Inventory, and insert if > 0.
+      
             INSERT INTO SalesOrderLine (SalesOrderID, ProductID, Quantity, UnitPrice)
             SELECT TOP 1 
                 @NewSOID, 
@@ -190,15 +176,15 @@ BEGIN
             WHERE i.QuantityOnHand > 0 -- ONLY SELL IF IN STOCK
             ORDER BY NEWID();
 
-            -- If we successfully added a line, create the Payment & Transaction
+            
             IF EXISTS (SELECT 1 FROM SalesOrderLine WHERE SalesOrderID = @NewSOID)
             BEGIN
-                -- 1. Create Payment
+               
                 INSERT INTO Payment (SalesOrderID, PaymentDate, PaymentMethod, PaymentAmount, PaymentStatus)
                 SELECT @NewSOID, @CurrentDate, 'Credit Card', SUM(Quantity * UnitPrice), 'Success'
                 FROM SalesOrderLine WHERE SalesOrderID = @NewSOID;
 
-                -- 2. DEDUCT INVENTORY (The Trigger handles the Master Table, we just log the Transaction)
+                
                 INSERT INTO InventoryTransaction (ProductID, StoreID, TransactionDate, TransactionType, QuantityChange, ReferenceSalesLineID)
                 SELECT ProductID, @StoreID, @CurrentDate, 'Sale', -1 * Quantity, SalesOrderLineID
                 FROM SalesOrderLine WHERE SalesOrderID = @NewSOID;
@@ -215,29 +201,27 @@ BEGIN
     END
 
     -- C. REPLENISHMENT (Buying Logic)
-    -- Run this check every Monday (Day 2 of week) to restock
+    
     IF DATEPART(WEEKDAY, @CurrentDate) = 2 
     BEGIN
         SET @StoreID = 1;
         WHILE @StoreID <= 5
         BEGIN
-            -- Find items with < 5 stock
+            
             IF EXISTS (SELECT 1 FROM Inventory WHERE StoreID = @StoreID AND QuantityOnHand < 5)
             BEGIN
-                -- Create PO
+               
                 INSERT INTO PurchaseOrder (SupplierID, StoreID, OrderDate, ExpectedDeliveryDate, POStatus)
                 VALUES (1, @StoreID, @CurrentDate, DATEADD(DAY, 7, @CurrentDate), 'Closed');
                 DECLARE @RestockPO INT = SCOPE_IDENTITY();
 
-                -- Order 20 more of anything that is low
+                
                 INSERT INTO PurchaseOrderLine (PurchaseOrderID, ProductID, QuantityOrdered, UnitCost)
                 SELECT @RestockPO, ProductID, 20, (SELECT StandardCost FROM Product WHERE ProductID = Inventory.ProductID)
                 FROM Inventory 
                 WHERE StoreID = @StoreID AND QuantityOnHand < 5;
 
-                -- Receive it 7 days later (Future Simulation)
-                -- We cheat slightly and process the receipt NOW but date it for the future
-                -- so the data exists for analysis.
+               
                 INSERT INTO InboundShipment (ActualArrivalDate, CarrierName) 
                 VALUES (DATEADD(DAY, 7, @CurrentDate), 'Restock Express');
                 DECLARE @RestockShip INT = SCOPE_IDENTITY();
@@ -261,12 +245,10 @@ BEGIN
     SET @CurrentDate = DATEADD(DAY, 1, @CurrentDate);
 END
 
-PRINT 'Simulation Complete. 2023-Present data loaded.';
-
-
 
 
 ---------------------------------------------------------------------
+
 
 
 
