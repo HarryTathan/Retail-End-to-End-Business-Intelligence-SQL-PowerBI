@@ -9,39 +9,50 @@
 
 ## 📊 Overview
 
-This project is an end-to-end business intelligence solution analyzing 3 years of retail performance data (2023-2025) using **MS SQL Server** and **Power BI**. The dashboard connects **Supply Chain efficiency** with **Commercial Profitability** and **Customer Loyalty (RFM)** to provide a 360-degree view of business health.
-
-The solution demonstrates the full data lifecycle: extracting 3NF transactional data, modeling it into a **Galaxy Schema** in SQL Server, and visualizing complex logic like Market Basket Analysis and Churn Risk in Power BI.
+This project is an end-to-end business intelligence solution analyzing 3 years of retail performance data (2023-2025) using **MS SQL Server** and **Power BI**. The solution bridges the gap between **Strategic Analytics (Profitability, Customer Loyalty(RFM))** and **Operational Execution** to provide a **360-degree view of business health**.
 
 
+It demonstrates the full data lifecycle:
 
+**Engineering:** Extracting 3NF transactional data and modeling it into a **Galaxy Schema** in SQL Server.
+
+**Analytics:** Visualizing complex logic like **Market Basket Analysis and Churn Risk** in Power BI.
+
+**Operations:** Delivering pixel-perfect **Paginated Reports** for warehouse logistics.
+
+**Governance:** Implementing **Row Level Security (RLS)** to restrict data access, ensuring Store Managers only see their own branch's performance.
 
 ---
 
 ## 🚀 Business Impact & Key Insights
 
 * **Identified Unrealized Revenue Opportunities:** Uncovered unrealized revenue by analyzing items frequently bought together and understanding upselling opportunities.
-* **Risk Mitigation:** Flagged specific suppliers with higher lead times to prevent stockouts.
+* **Risk Mitigation:** Flagged specific suppliers with consistently high lead times (>15 days) to prevent stockouts.
 * **Customer Segmentation:** Segmented the user base into 4 actionable groups (**VIP, Loyal, At-Risk-Churning, and Regular**) using RFM analysis.
 * **Profit Optimization:** Identified negative-margin transactions and "unrealized revenue" opportunities.
 
 ---
 
 
-## 🛠️ Tech Stack & Architecture
+## 🛠️ Tech Stack
 
 * **Database:** Microsoft SQL Server
 * **ETL/Modeling:** SQL Views, CTEs, and 3NF to Galaxy Schema Transformation
 * **Visualization:** Power BI Desktop & Service
 * **Analytics:** DAX (Time Intelligence, Semi-Additive Measures), What-If Parameters
 
-## 🛠️ Data Architecture & Modeling
 
-### The Engineering Pipeline (SQL Server)
-* **Source:** Normalized 3NF data in Microsoft SQL Server (Data Warehouse)
-* **Modeling Strategy:** Transformed into a **Galaxy Schema** (Gold Layer) to support complex multi-process reporting.
+## 🛠️Medallion Architecture
+
+The project follows a layered transformation approach to ensure data quality and performance:
+
+* **🥉 Bronze Layer (Raw):** Raw retail transaction records and supplier logs.
+* **🥈 Silver Layer (3NF - Source):** Normalized relational data stored in SQL Server. This acts as the Data Warehouse, ensuring data integrity and reducing redundancy.
+* **🥇 Gold Layer (Galaxy Schema - Reporting):** Transformed the data into Fact and Dimension tables **Galaxy Schema** to support complex DAX and high-performance filtering.
 * **Fact Tables:** `fct_sales`, `fct_inventory`, `fct_purchasing`.
 * **Dimension Tables:** `dim_date`, `dim_customer`, `dim_products`, `dim_store`, `dim_supplier`, `security_mapping`.
+
+
 
 ---
 ## 💻 SQL Analytics & Reporting Modules
@@ -98,7 +109,7 @@ The report is divided into 5 strategic views:
 * **Scatter Charts:**
     1.  Revenue vs. Time to Sell.
     2.  Profit vs. Revenue.
-    * *UX Feature:* Charts overlap and are toggleable using **Bookmarks**.
+    * *UX Feature:* Dynamic View Switching (Bookmarks) to maintain a clean interface while allowing users to toggle between Profit and Revenue views without changing pages.
 * **Matrix:** Product-level breakdown of Revenue, Gross Profit, Profit %, and Days to Sell.
 * **Visual:** Customer Segmentation Bar Chart.
 
@@ -153,7 +164,9 @@ The report is divided into 5 strategic views:
 - [x] **SQL Analytics:** Cohort Analysis, Basket Analysis, and KPI generation.
 - [x] **Advanced DAX:** Attachment Rates, Churn Risk logic, Unrealized Revenue.
 - [x] **Visual Interaction:** Bookmarks for chart toggling, Drill-throughs, Page Navigation.
+- [x] **Enterprise Reporting:** Built pixel-perfect Paginated Reports (SSRS) using Report Builder for operational inventory lists.
 - [x] **Security:** Row Level Security (RLS) using mapping tables.
+- [x] **Cloud and Governance:** Power BI Service deployment, Automated Data Alerts, and Row Level Security (RLS).
 
 ---
 
